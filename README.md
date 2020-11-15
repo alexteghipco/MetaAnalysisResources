@@ -65,27 +65,27 @@ Downgrade to:
 * There have been some efforts to organize terms in NS into topics using author-topic models [10]. The results of that are available to download on the [NS website](https://neurosynth.org/analyses/topics/). These models typically identify frequently co-occuring words, which guides the grouping of studies into the standard association meta-analysis in the NS framework. More sophisticated approaches that consider both brain activity and word co-occurences for defining topics have been applied to NS more recently [11].
 
 ## References
-[1](https://www.nature.com/articles/nmeth.1635) Paper proposing NS. 
+[[1]](https://www.nature.com/articles/nmeth.1635) Paper proposing NS. 
 
-[2](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3240863/#S2title) Further info on reverse inference and why it's not so bad. One of the author's of [1] has previously written about the fragile assumptions involved in reverse-inference as it is typically employed by individual studies; one purpose of NS is to provide a more rigorous framework for doing reverse-inference and this is kind of motivated here.
+[[2]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3240863/#S2title) Further info on reverse inference and why it's not so bad. One of the author's of [1] has previously written about the fragile assumptions involved in reverse-inference as it is typically employed by individual studies; one purpose of NS is to provide a more rigorous framework for doing reverse-inference and this is kind of motivated here.
 
-[3](https://www.sciencedirect.com/science/article/pii/S1053811913000141) Another good paper to read if you're curious about reverse-inference.
+[[3]](https://www.sciencedirect.com/science/article/pii/S1053811913000141) Another good paper to read if you're curious about reverse-inference.
 
-[4](http://www.talyarkoni.org/blog/2015/12/14/still-not-selective-comment-on-comment-on-comment-on-lieberman-eisenberger-2015/) Great resource for correctly interpreting NS results.
+[[4]](http://www.talyarkoni.org/blog/2015/12/14/still-not-selective-comment-on-comment-on-comment-on-lieberman-eisenberger-2015/) Great resource for correctly interpreting NS results.
 
-[5](https://www.talyarkoni.org/blog/2015/12/05/no-the-dorsal-anterior-cingulate-is-not-selective-for-pain-comment-on-lieberman-and-eisenberger-2015/) Great resource for correctly interpreting NS results.
+[[5]](https://www.talyarkoni.org/blog/2015/12/05/no-the-dorsal-anterior-cingulate-is-not-selective-for-pain-comment-on-lieberman-and-eisenberger-2015/) Great resource for correctly interpreting NS results.
 
-[6](https://www.frontiersin.org/articles/10.3389/fninf.2011.00017/full) Building a cognitive atlas (and how neurosynth might help).
+[[6]](https://www.frontiersin.org/articles/10.3389/fninf.2011.00017/full) Building a cognitive atlas (and how neurosynth might help).
 
-[7](https://www.pnas.org/content/112/49/15250) Paper making some wild (incorrect) claims using NS. 
+[[7]](https://www.pnas.org/content/112/49/15250) Paper making some wild (incorrect) claims using NS. 
 
-[8](https://www.pnas.org/content/113/18/E2474.long) Response to [7].
+[[8]](https://www.pnas.org/content/113/18/E2474.long) Response to [7].
 
-[9](https://www.pnas.org/content/113/18/E2476) Response to [8].
+[[9]](https://www.pnas.org/content/113/18/E2476) Response to [8].
 
-[10](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002707) Modeling topics using word frequencies in studies. 
+[[10]](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002707) Modeling topics using word frequencies in studies. 
 
-[11](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5683652/) Modeling topics using word frequencies and activation tables in studies.
+[[11]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5683652/) Modeling topics using word frequencies and activation tables in studies.
 
 *References 4 and 5 are from Tal Yarkoni's blog so they are the best info you can refer to for interpreting NS results. These two blog posts criticize the interpretation of a paper that used NS association maps to claim selectivity for pain in the dorsal ACC [7]. Some of what seem like more minor criticisms were formalized in a response letter in PNAS [8]. The original authors of the study wrote a reply [9]. This is when default NS maps became "association maps" and not "reverse-inference" maps*
 
@@ -111,8 +111,8 @@ Some other things to note: Your meta-analysis should have a min. of 17 studies. 
 
 ## References
 
-[1](https://bmcresnotes.biomedcentral.com/articles/10.1186/1756-0500-4-349) A paper outlining the BrainMap project
+[[1]](https://bmcresnotes.biomedcentral.com/articles/10.1186/1756-0500-4-349) A paper outlining the BrainMap project
 
-[2](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3254820/) Good explanation of ALE and the BrainMap approach to meta-analysis (the updated approach)
+[[2]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3254820/) Good explanation of ALE and the BrainMap approach to meta-analysis (the updated approach)
 
 [3] My notes show [2] as the reference for this, but I don't think that's correct. I'll hunt down the right study and update this ref.

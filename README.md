@@ -79,9 +79,9 @@ Downgrade to:
 
 [7](https://www.pnas.org/content/112/49/15250) Paper making some wild (incorrect) claims using NS. 
 
-[8](https://www.pnas.org/content/113/18/E2474.long) Response to [8].
+[8](https://www.pnas.org/content/113/18/E2474.long) Response to [7].
 
-[9](https://www.pnas.org/content/113/18/E2476) Response to [9].
+[9](https://www.pnas.org/content/113/18/E2476) Response to [8].
 
 [10](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002707) Modeling topics using word frequencies in studies. 
 

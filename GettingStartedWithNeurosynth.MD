@@ -94,7 +94,7 @@ If you navigate to the folder you've set up as baseDir, you should now see a bun
 * "*_pFgA_pF=0.50.nii.gz is the " -- this is a true reverse-inference map using a uniform prior. It is not corrected.
 * "*_pFgA_pF=0.50_FDR_0.05.nii.gz is the " -- this is a true reverse-inference map using a uniform prior. It is FDR corrected based on the q variable you passed to meta.MetaAnalysis
 
-You can now load these maps into your favorite volume viewing software. If you don't have a favorite and you're interested in quickly being able to project volume space (MNI) maps into surface space, might I suggest brainSurfer? 
+You can now load these maps into your favorite volume viewing software. If you don't have a favorite and you're interested in quickly being able to project volume space (MNI) maps into surface space, might I suggest [brainSurfer](https://github.com/alexteghipco/brainSurfer)? 
 
 The maps you'll mostly be interested in are the corrected "specificity" (i.e., association) maps. If you project the non-FDR corrected map into volume space, you'll see something like this: 
 

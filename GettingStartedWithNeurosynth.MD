@@ -1,5 +1,7 @@
 This readme will take you through some analyses that you can perform in neurosynth. Some of this code can also be found in the Neurosynth [readme](https://github.com/neurosynth/neurosynth/blob/master/README.md). 
 
+## Getting started
+
 Okay, so first thing we'll want to do is open up a terminal window (if you're on mac) and start up python. Then, we'll want to import the neurosynth module and also the os module for some auxilary functions that will come in handy later.
 
 	> from neurosynth import meta, decode, network, Dataset
@@ -15,6 +17,8 @@ The next step--which might take a few minutes--is to extract word frequencies fr
  
  	> dataset.add_features('/usr/local/lib/python2.7/site-packages/neurosynth/features.txt')
   
+## Making lists of studies
+
 And that's it! Now you can start meta-analyzing. Let's say we want to pull out all of the studies that frequently use the phrase "semantic" in the Neurosynth database. In this case, we'll define "frequently" as the default according to Neurosynth, which is 1/1000 words. 
 
 **Note in some documents, Neurosynth claims these frequencies line up with words in the abstract, in others it claims it lines up with main text frequencies. Based on testing I've done, it looks like it's the latter.*
@@ -71,11 +75,13 @@ To get all studies either using the phrase "semantic" or "phonological" we would
 
 **Note I'm saving the output as a list in a lot of these cases because it makes it easier to just paste the printed result into matlab (also I think lists are a little bit easier to work with in python). If you want to keep output saved as a set, you can.*
 
+## Basic meta-analyses
+
 So far we haven't actually performed a meta-analysis of the lists of studies we've been retrieving. Let's do that now: 
 
 	> baseDir = '/Users/alex/Desktop/semPhon'
- 	> conM = meta.MetaAnalysis(dataset, sem_minus_phon, q=0.05)
- 	> conM.save_results('prefix',baseDir + '/SemMinPhon')
+ 	> m = meta.MetaAnalysis(dataset, sem_minus_phon, q=0.05)
+ 	> m.save_results('prefix',baseDir + '/SemMinPhon')
 
 If you navigate to the folder you've set up as baseDir, you should now see a bunch of files with different appended strings. These are the ones that are important:
 
@@ -92,9 +98,120 @@ You can now load these maps into your favorite volume viewing software. If you d
 
 The maps you'll mostly be interested in are the corrected "specificity" (i.e., association) maps. If you project the non-FDR corrected map into volume space, you'll see something like this: 
 
-![SemMinPhon not thresholded](https://ibb.co/6tGWVcZ)
+![SemMinPhon not thresholded](https://i.imgur.com/nKo7hGy.png)
 
+If you are working in surface space, you might want to FDR correct your image at this point. To do so, you can use the ZtoP.m file in this repository, along with some way of reading in nifti files into matlab (for example, brainSurfer will come with load_nifti.m, which is distributed with freesurfer). You can then run something like this:
 
+ 	>> baseDir = '/Users/alex/Desktop/semPhon'; % since we haven't defined the main directory we'll be working with in matlab yet
+ 	>> in = load_nifti([baseDir '/SemMinPhon_specificity_z_RF_ANTs_MNI152_to_fsaverage_LH.nii.gz']); % load in the nifti file
+ 	>> [pVec, pVecCorr, pVecQVals] = ZtoP(in.vol, 'FDR', 0.05); % the last argument is q threshold
+ 	>> id = find(pVecCorr >= 0.05);
+	>> in.vol(id) = 0;
+	>> save_nifti(in,[baseDir '/SemMinPhon_specificity_z_FDR_05_RF_ANTs_MNI152_to_fsaverage_LH.nii.gz'])
 
+Now if you load up your FDR corrected file, it should look something like this: 
 
+![SemMinPhon thresholded](https://i.imgur.com/4gFo1kH.png)
+
+But let's say we want to more concretely evaluate which areas are involved in semantics than phonology. To do this, we can run a contrast meta-analysis, where instead of using all studies as the comparison to our selected list of studies, we just use another list. This code will generate such an analysis: 
+
+ 	> conM = meta.MetaAnalysis(dataset, sem, phon, q=0.01)
+ 	> conM.save_results('prefix',base + '/SemVsPhon')
+
+If you load up the results (association map), they might look something like this: 
+
+![SemVsPhon](https://i.imgur.com/4FirUMT.png)
+
+Looks like no regions are more activated for semantic studies than phonological studies. As far as phonological studies go, we see greater activity in ventral premotor cortex bleeding into the inferior frontal sulcus, the inferior parietal sulcus, and curiously two small clusters in the superior temporal gyrus: one in posterior planum temporale (area Spt?), and one in anterior-to-mid PT. This lines up nicely with the phonological network we might expect. The mid-PT activity is closer to the superior temporal sulcus and could be consistent with what phonological studies often refer to as posterior superior temporal sulcus. We might expect more activity in IFG, although it does exist (there is a teeny tiny cluster). Stronger activity in premotor cortex might reflect the fact that some semantic studies still involve phonological access, but on the whole are way less likely to use any kind of speech production tasks. 
+
+## Other useful basic stuff
+
+Another useful analysis you can do in Neurosynth, is to search studies based on foci. Let's say you're interested in an area of ventral premotor cortex that has a center of mass in [-52,-4,44] (MNI space). Well, we can retrieve all studies that report activity within a small 4mm radius of that point by using the following code: 
+
+ 	> prem = dataset.get_studies(peaks=[[-52, -4, 44]], r=4)
+	> len(prem)
+
+This gives us a list of 157 studies. Now, if we wanted to, we could manually comb through these studies, identify the contrasts that activated our coordinate, and then try to come up with an understanding of what computation it might support. A similar functionality is provided by other databases, but it makes the most sense to use neurosynth for this because it's by far the largest database.
+
+Another very useful analysis in Neurosynth is to produce a coactivation map. This will tell us which other areas tend to be reported as activating in conjunction with our coordinate, across all sorts of tasks. To do this, you would run something like this: 
+
+ 	> network.coactivation(dataset, [[-52, -4, 44]], threshold=0.1, outroot='PreMCoactivation', r=4)
+
+You could also do a similar thing with an entire ROI rather than a single coordinate. That is, look for studies that report activity near any coordinate within a region. You can even do this for multiple regions at once:
+
+ 	> ids = get_studies_by_regions(dataset,["PreMCoactivation.nii.gz", "SemMinPhon_specificity_z.nii.gz"], threshold=0.08,remove_overlap=True, studies=None,features=None, regularization="scale") 
+
+Finally, it's also possible to decode other maps you have lying around. By default, this amounts to correlating your map with each meta-analysis. As such, this works best with unthresholded maps:
+
+ 	> decoder = decode.Decoder(dataset=dataset, method='pearson', features=None, mask=None, image_type='association-test_z', threshold=0.001)
+	> r = decoder.decode('SemMinPhon_specificity_z.nii.gz', save='SemMinPhon_specificity_z_decoded.txt')
+	
+**Note The decoder generates each possible meta-analysis so if you don't pass in a list of specific features, it will take forever to execute that first line*
+
+If we wanted to decode an ROI, we could do this as well. The decoder will return the mean z-sore within our ROI for each feature/phrase we want analyzed
+
+ 	> decoder = decode.Decoder(dataset=dataset, method='ROI', features=None, mask=None, image_type='association-test_z', threshold=0.001)
+	> r = decoder.decode('SemMinPhon_specificity_z.nii.gz', save='SemMinPhon_specificity_z_decoded.txt')
+
+## More complex stuff you can do
+
+So these are the basic analyses you can do in Neurosynth. But let's look at some other cool things you might try. For example, let's say you want to try to split semantic studies into different groups based on the different word frequencies they use. To do something like that you might try adding this to the snippet of matlab code from above where we extracted study info using pmids: 
+
+ 	>> fileID = fopen('/Users/alex/Downloads/current_data/features.txt'); % load in word frequencies
+ 	>> tmp = '%s ';
+ 	>> tmp2 = repmat(tmp,1,3229); % each column in the features file is a frequently used word
+	>> f = textscan(fileID,tmp2,'delimiter','	');
+
+	>> clear dCheck
+	>> dCheck = str2double([f{1}]);
+	>> for i = 1:length(pmid) % loop over pmids and extract their word frequencies
+	>>    disp(num2str(i))
+	>>    id = find(dCheck == pmid(i));
+	>>    for j = 1:length(f)-1
+	>>    	  studyFq(i,j) = str2double(f{j+1}(id));
+	>>    end
+	>> end
+
+	>> for j = 1:length(f)-1 
+	>>     feat{j} = f{j+1}{1};
+	>> end
+
+The rows of studyFq index each study you've retrieved, and the cols index the frequency of each word in the study. You might want to do some other processing to this matrix, but it's now effectively possible to cluster studies together using their word frequencies. Maybe you might try something like k-means: 
+
+	>> [IDX, C] = kmeans(studyFq, 2)
+	
+By the way, if you're annoyed by having to copy in the pmids from python/bash into matlab, a more elegant solution might be to save the pmids for each phrase you're interested in analyzing into a text file that you can reference later or load in automatically from matlab. This code would do that for you: 
+
+	> for keyterm in your_list: # make sure you put all the phrases you want to loop through into your_list. To extract all features from neurosynth, you can use: dataset.get_feature_names()
+	>     print(keyterm)
+	>     ids = dataset.get_studies(features=keyterm,frequency_threshold=0.001,activation_threshold=0.0, r=4)
+	>     outName = baseDir + '/' + keyterm[0] + '_ids.txt'
+	>     f = open(outName, "w")
+	>     ids = str(ids)
+	>     f.write(ids[1:-1])
+	>     f.close()
+
+Maybe instead of clustering words, we want to cluster meta-analyses themselves. Or maybe we'd just like to precompute all of the meta-analysis files so that we never have to regenerate them on the fly. To do something like that, you can run the following: 
+
+	> outFold = '/Volumes/HICKOK-LAB/NS_metas'
+	> outExt = '.nii.gz'
+	> os.mkdir(outFold)
+	> feature_list = dataset.get_feature_names()
+	> for i in feature_list:
+ 	>     print(i)
+ 	>     id = dataset.get_studies(i, frequency_threshold=0.001)
+ 	>     m = meta.MetaAnalysis(dataset, id, q=0.01)
+ 	>     fOut = outFold + '/' + i + outExt
+	>     print(fOut)
+	>     m.save_results('.', fOut)
+    
+Let's say you want to decode each meta-analysis as well. This amounts to correlating each meta-analysis with each other meta-analysis. Lots of ways you could do this. The fastest will be to load in all your meta-analyses and cross correlate them. Another might be to take advantage of the decoder function in neurosynth using something like this: 
+
+	>> os.chdir(outFold)
+	>> for file in glob.glob("*_pFgA_z.nii.gz"): # this is an older way neurosynth referred to association maps so you might have to change this expression so you capture the right files...
+	>>     print(file)
+ 	>>     outName = file[:-7] + '_decoded.txt'
+ 	>>     result = decoder.decode(file, save=outName)
+	
+And that's it! I think this more than enough to get you really started with neurosynth. There's all sorts of interesting things you can do to build on these analyses. Send me questions or comments if something isn't working and I'd be glad to help.
 

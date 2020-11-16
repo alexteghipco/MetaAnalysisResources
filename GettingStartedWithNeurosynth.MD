@@ -1,6 +1,6 @@
 This readme will take you through some analyses that you can perform in neurosynth. Some of this code can also be found in the Neurosynth [readme](https://github.com/neurosynth/neurosynth/blob/master/README.md). 
 
-## Getting started
+# Getting started
 
 Okay, so first thing we'll want to do is open up a terminal window (if you're on mac) and start up python. Then, we'll want to import the neurosynth module and also the os module for some auxilary functions that will come in handy later.
 
@@ -17,7 +17,7 @@ The next step--which might take a few minutes--is to extract word frequencies fr
  
  	> dataset.add_features('/usr/local/lib/python2.7/site-packages/neurosynth/features.txt')
   
-## Making lists of studies
+# Making lists of studies
 
 And that's it! Now you can start meta-analyzing. Let's say we want to pull out all of the studies that frequently use the phrase "semantic" in the Neurosynth database. In this case, we'll define "frequently" as the default according to Neurosynth, which is 1/1000 words. 
 
@@ -75,7 +75,7 @@ To get all studies either using the phrase "semantic" or "phonological" we would
 
 **Note I'm saving the output as a list in a lot of these cases because it makes it easier to just paste the printed result into matlab (also I think lists are a little bit easier to work with in python). If you want to keep output saved as a set, you can.*
 
-## Basic meta-analyses
+# Basic meta-analysis
 
 So far we haven't actually performed a meta-analysis of the lists of studies we've been retrieving. Let's do that now: 
 
@@ -109,6 +109,8 @@ If you are working in surface space, you might want to FDR correct your image at
 	>> in.vol(id) = 0;
 	>> save_nifti(in,[baseDir '/SemMinPhon_specificity_z_FDR_05_RF_ANTs_MNI152_to_fsaverage_LH.nii.gz'])
 
+**Note ZtoP uses mafdr.m to perform FDR correction. This comes with the bioinformatics toolbox in MATLAB but you can also download any of the many FDR correction scripts out there for matlab and just change one line in ZtoP.m
+
 Now if you load up your FDR corrected file, it should look something like this: 
 
 ![SemMinPhon thresholded](https://i.imgur.com/4gFo1kH.png)
@@ -124,7 +126,7 @@ If you load up the results (association map), they might look something like thi
 
 Looks like no regions are more activated for semantic studies than phonological studies. As far as phonological studies go, we see greater activity in ventral premotor cortex bleeding into the inferior frontal sulcus, the inferior parietal sulcus, and curiously two small clusters in the superior temporal gyrus: one in posterior planum temporale (area Spt?), and one in anterior-to-mid PT. This lines up nicely with the phonological network we might expect. The mid-PT activity is closer to the superior temporal sulcus and could be consistent with what phonological studies often refer to as posterior superior temporal sulcus. We might expect more activity in IFG, although it does exist (there is a teeny tiny cluster). Stronger activity in premotor cortex might reflect the fact that some semantic studies still involve phonological access, but on the whole are way less likely to use any kind of speech production tasks. 
 
-## Other useful basic stuff
+# Other useful basic stuff
 
 Another useful analysis you can do in Neurosynth, is to search studies based on foci. Let's say you're interested in an area of ventral premotor cortex that has a center of mass in [-52,-4,44] (MNI space). Well, we can retrieve all studies that report activity within a small 4mm radius of that point by using the following code: 
 
@@ -153,11 +155,11 @@ If we wanted to decode an ROI, we could do this as well. The decoder will return
  	> decoder = decode.Decoder(dataset=dataset, method='ROI', features=None, mask=None, image_type='association-test_z', threshold=0.001)
 	> r = decoder.decode('SemMinPhon_specificity_z.nii.gz', save='SemMinPhon_specificity_z_decoded.txt')
 
-## More complex stuff you can do
+# More complex stuff you can do
 
 So these are the basic analyses you can do in Neurosynth. But let's look at some other cool things you might try. For example, let's say you want to try to split semantic studies into different groups based on the different word frequencies they use. To do something like that you might try adding this to the snippet of matlab code from above where we extracted study info using pmids: 
 
- 	>> fileID = fopen('/Users/alex/Downloads/current_data/features.txt'); % load in word frequencies
+ 	>>> fileID = fopen('/Users/alex/Downloads/current_data/features.txt'); % load in word frequencies
  	>> tmp = '%s ';
  	>> tmp2 = repmat(tmp,1,3229); % each column in the features file is a frequently used word
 	>> f = textscan(fileID,tmp2,'delimiter','	');
@@ -207,11 +209,11 @@ Maybe instead of clustering words, we want to cluster meta-analyses themselves. 
     
 Let's say you want to decode each meta-analysis as well. This amounts to correlating each meta-analysis with each other meta-analysis. Lots of ways you could do this. The fastest will be to load in all your meta-analyses and cross correlate them. Another might be to take advantage of the decoder function in neurosynth using something like this: 
 
-	>> os.chdir(outFold)
-	>> for file in glob.glob("*_pFgA_z.nii.gz"): # this is an older way neurosynth referred to association maps so you might have to change this expression so you capture the right files...
-	>>     print(file)
- 	>>     outName = file[:-7] + '_decoded.txt'
- 	>>     result = decoder.decode(file, save=outName)
+	> os.chdir(outFold)
+	> for file in glob.glob("*_pFgA_z.nii.gz"): # this is an older way neurosynth referred to association maps so you might have to change this expression so you capture the right files...
+	>     print(file)
+ 	>     outName = file[:-7] + '_decoded.txt'
+ 	>     result = decoder.decode(file, save=outName)
 	
 And that's it! I think this more than enough to get you really started with neurosynth. There's all sorts of interesting things you can do to build on these analyses. Send me questions or comments if something isn't working and I'd be glad to help.
 

@@ -159,7 +159,7 @@ If we wanted to decode an ROI, we could do this as well. The decoder will return
 
 So these are the basic analyses you can do in Neurosynth. But let's look at some other cool things you might try. For example, let's say you want to try to split semantic studies into different groups based on the different word frequencies they use. To do something like that you might try adding this to the snippet of matlab code from above where we extracted study info using pmids: 
 
- 	>>> fileID = fopen('/Users/alex/Downloads/current_data/features.txt'); % load in word frequencies
+ 	>> fileID = fopen('/Users/alex/Downloads/current_data/features.txt'); % load in word frequencies
  	>> tmp = '%s ';
  	>> tmp2 = repmat(tmp,1,3229); % each column in the features file is a frequently used word
 	>> f = textscan(fileID,tmp2,'delimiter','	');

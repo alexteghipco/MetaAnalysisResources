@@ -23,7 +23,7 @@ And that's it! Now you can start meta-analyzing. Let's say we want to pull out a
 
 **Note in some documents, Neurosynth claims these frequencies line up with words in the abstract, in others it claims it lines up with main text frequencies. Based on testing I've done, it looks like it's the latter.*
 
- 	> sem = = dataset.get_studies('semantic', frequency_threshold=0.001)
+ 	> sem = dataset.get_studies('semantic', frequency_threshold=0.001)
   
 Using the following command we can quickly check how many studies we've retrieved:
 

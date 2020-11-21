@@ -207,6 +207,63 @@ Maybe instead of clustering words, we want to cluster meta-analyses themselves. 
 	>     print(fOut)
 	>     m.save_results('.', fOut)
     
+I typically work with the whole NS database in matlab, which you can prepare with the following code once you've produced all of your meta-analyses: 
+
+	>> cd('/Volumes/HICKOK-LAB/NS_metas')
+	>> % load in a brain mask first so you aren't wasting your hard drive space by storing empty space
+	>> tmp = load_nifti('/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask.nii.gz');
+	>> coBrain = find(tmp.vol ~= 0);
+
+	>> % we'll be using load_nifti, which will have issues unzipping files if they have spaces. Unfortunately, these files do have spaces...let's loop through all files and fix that
+	>> files = dir('*');
+	>> for i = 1:length(files)
+	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(files))])
+	>>     id = strfind(files(i).name,' ');
+	>>     if ~isempty(id)
+	>>         oName = files(i).name;
+	>>         oName(id) = '_';
+	>>         movefile(files(i).name,oName)
+	>>     end
+	>> end
+
+	>> % let's load in all of the association maps first (unthresholded)
+	>> files = dir('*specificity_z.nii.gz');
+	>> for i = 1:length(files)
+	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(files))])
+	>>     feat{i,1} = files(i).name(1:end-28); % this will remove the appended strings so that you can extract just the feature name
+	>>     tmp = load_nifti(files(i).name);
+	>>     allMetasUnthresh(:,i) = tmp.vol(coBrain);
+	>> end
+
+	>> % let's load in all of the association maps (thresholded). We should use the feature names now to make sure this new matrix cols line up with the old one
+	>> for i = 1:length(feat)
+	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(feat))])
+	>>     tmp = load_nifti([feat{i} '.nii.gz_specificity_z_FDR_0.01.nii.gz']);
+	>>     allMetasThresh(:,i) = tmp.vol(coBrain);
+	>> end
+	
+	>> % and here's how we can load up the reverse-inference maps
+	>> for i = 1:length(feat)
+	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(feat))])
+	>>     tmp = load_nifti([feat{i} '.nii.gz_pFgA_emp_prior.nii.gz']);
+	>>     allMetasRIEmpUnthresh(:,i) = tmp.vol(coBrain);
+	>> end
+	>> for i = 1:length(feat)
+	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(feat))])
+	>>     tmp = load_nifti([feat{i} '.nii.gz_pFgA_emp_prior_FDR_0.01.nii.gz']);
+	>>     allMetasRIEmpUnthresh(:,i) = tmp.vol(coBrain);
+	>> end
+	>> for i = 1:length(feat)
+	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(feat))])
+	>>     tmp = load_nifti([feat{i} '.nii.gz_pFgA_pF=0.50.nii.gz']);
+	>>     allMetasRIUniUnthresh(:,i) = tmp.vol(coBrain);
+	>> end
+	>> for i = 1:length(feat)
+	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(feat))])
+	>>     tmp = load_nifti([feat{i} '.nii.gz_pFgA_pF=0.50_FDR_0.01.nii.gz']);
+	>>     allMetasRIUniThresh(:,i) = tmp.vol(coBrain);
+	>> end
+
 Let's say you want to decode each meta-analysis as well. This amounts to correlating each meta-analysis with each other meta-analysis. Lots of ways you could do this. The fastest will be to load in all your meta-analyses and cross correlate them. Another might be to take advantage of the decoder function in neurosynth using something like this: 
 
 	> os.chdir(outFold)

@@ -207,14 +207,14 @@ Maybe instead of clustering words, we want to cluster meta-analyses themselves. 
 	>     print(fOut)
 	>     m.save_results('.', fOut)
     
-I typically work with the whole NS database in matlab, which you can prepare with the following code once you've produced all of your meta-analyses: 
+I typically work with the whole NS database in matlab, which you can prepare with the following code once you've produced all of your meta-analyses. First, we want to load in a brain mask so we're not wasting memory by storing empty space. FYI NS data is in 2mm MNI space. You can load in your 2mm space template and just index all voxels that are non-zero intensities. Or, you can use an existing brain mask (i.e., a binarized version of your 2mm space template). Here, I'll use the brain mask that comes with FSL. 
 
-	>> cd('/Volumes/HICKOK-LAB/NS_metas')
-	>> % load in a brain mask first so you aren't wasting your hard drive space by storing empty space
 	>> tmp = load_nifti('/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask.nii.gz');
 	>> coBrain = find(tmp.vol ~= 0);
 
-	>> % we'll be using load_nifti, which will have issues unzipping files if they have spaces. Unfortunately, these files do have spaces...let's loop through all files and fix that
+Now we need to do a little bit of cleanup on the NS meta-analysis files before we can load them into matlab. If we use load_nifti.m (which comes with this repository; it's from freesurfer) to read the files into matlab we will run into trouble. It's likely other read methods will run into the same issue (e.g., load_untouch_nii.m from neuroelf/brainvoyager), which is that unzipping your nifti files with gunzip fails if there are spaces in the file name. There are ways around this in shell, but most of these scripts won't be utilizing them. As a result, we'll need to remove spaces from our meta-analysis file names:
+
+	>> cd('/Volumes/HICKOK-LAB/NS_metas')
 	>> files = dir('*');
 	>> for i = 1:length(files)
 	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(files))])
@@ -226,6 +226,8 @@ I typically work with the whole NS database in matlab, which you can prepare wit
 	>>     end
 	>> end
 
+Now we can finally read in all the data, making a giant matrix of brain voxels (rows) x meta-analyses (cols). To do this, we can just loop through our files in this directory, which we'll assume only contains meta-analysis output from NS. We'll also save out the meta-analysis names so we figure out what the cols in our matrix reference:
+
 	>> % let's load in all of the association maps first (unthresholded)
 	>> files = dir('*specificity_z.nii.gz');
 	>> for i = 1:length(files)
@@ -235,12 +237,16 @@ I typically work with the whole NS database in matlab, which you can prepare wit
 	>>     allMetasUnthresh(:,i) = tmp.vol(coBrain);
 	>> end
 
-	>> % let's load in all of the association maps (thresholded). We should use the feature names now to make sure this new matrix cols line up with the old one
+Now we can load in other meta-analysis maps. For instance, it might make sense to save the FDR thresholded association maps. Now we would loop through our meta-analysis names instead of each file in the directory just to be extra safe and ensure that this new matrix cols match our old matrix. 
+
+	>> % let's load in all of the association maps (thresholded)
 	>> for i = 1:length(feat)
 	>>     disp(['Working on file ' num2str(i) ' of ' num2str(length(feat))])
 	>>     tmp = load_nifti([feat{i} '.nii.gz_specificity_z_FDR_0.01.nii.gz']);
 	>>     allMetasThresh(:,i) = tmp.vol(coBrain);
 	>> end
+	
+Or we could also load in all of the reverse-inference maps, which can either have the empirical or uniform prior. These can also be FDR corrected or not.
 	
 	>> % and here's how we can load up the reverse-inference maps
 	>> for i = 1:length(feat)
@@ -266,10 +272,10 @@ I typically work with the whole NS database in matlab, which you can prepare wit
 
 Let's say you want to decode each meta-analysis as well. This amounts to correlating each meta-analysis with each other meta-analysis. Lots of ways you could do this. The fastest will be to load in all your meta-analyses and cross correlate them. Another might be to take advantage of the decoder function in neurosynth using something like this: 
 
-	> os.chdir(outFold)
-	> for file in glob.glob("*_pFgA_z.nii.gz"): # this is an older way neurosynth referred to association maps so you might have to change this expression so you capture the right files...
+	> os.chdir("/Volumes/HICKOK-LAB/NS_metas")
+	> for file in glob.glob("*specificity_z.nii.gz"):
 	>     print(file)
- 	>     outName = file[:-7] + '_decoded.txt'
+ 	>     outName = file[:-20] + '_decoded.txt'
  	>     result = decoder.decode(file, save=outName)
 	
 And that's it! I think this more than enough to get you really started with neurosynth. There's all sorts of interesting things you can do to build on these analyses. Send me questions or comments if something isn't working and I'd be glad to help.

@@ -157,12 +157,28 @@ If we wanted to decode an ROI, we could do this as well. The decoder will return
 
 # More complex stuff you can do
 
-So these are the basic analyses you can do in Neurosynth. But let's look at some other cool things you might try. For example, let's say you want to try to split semantic studies into different groups based on the different word frequencies they use. To do something like that you might try adding this to the snippet of matlab code from above where we extracted study info using pmids: 
+So these are the basic analyses you can do in Neurosynth. But let's look at some other cool things you might try. For example, let's say you want to try to split semantic studies into different groups based on the different word frequencies they use. To do something like that, you would need to extract word frequencies for studies frequently using the phrase "semantic", then pass those frequencies on to some kind of clustering algorithm. Here's how we would do this in MATLAB.
+
+First, we would load in the study-level word frequencies, which are the "features" of Neurosynth:
 
  	>> fileID = fopen('/Users/alex/Downloads/current_data/features.txt'); % load in word frequencies
  	>> tmp = '%s ';
  	>> tmp2 = repmat(tmp,1,3229); % each column in the features file is a frequently used word
 	>> f = textscan(fileID,tmp2,'delimiter','	');
+
+Then we would extract the group of studies for which we would like to identify subgroups based on their word frequencies: 
+
+	>> feat = cellfun(@(v)v(1),f); % this extracts the first row of each cell array, which is really just the column name in the features.txt file (studies 		are rows and each column is a NS term; values are frequencies at which a study uses a term)
+	>> [C,ia,ib] = intersect(feat,'semantic'); % the string here should map onto the term you'd like to isolate
+	>> tmp = str2double(f{ia}); % extract study frequencies for selected term (and convert to double array)
+	>> id = find(tmp > 0.001); % the number here should match the minimum rate at which you want a study to use your selected phrase
+	>> studyFq = cellfun(@(v)v(id),f,'UniformOutput',false); % extract word frequencies for studies that match the criterion
+	>> studyFq = str2double(horzcat(studyFq{:})); % convert word frequencies to double
+	>> pmid = studyFq(:,1);% extract the study ids that match the criterion
+	>> studyFq(:,1) = []; % remove pmids from word frequencies
+	>> feat(1) = []; % remove pmids from list of terms
+
+If we already had a list of pmids compiled, we could do this instead in order to extract the word frequencies for those studies: 
 
 	>> clear dCheck
 	>> dCheck = str2double([f{1}]);
@@ -174,6 +190,9 @@ So these are the basic analyses you can do in Neurosynth. But let's look at some
 	>>    end
 	>> end
 
+	>> feat = cellfun(@(v)v(1),f);
+	>> feat(1) = []; % remove pmids from list of terms
+
 	>> for j = 1:length(f)-1 
 	>>     feat{j} = f{j+1}{1};
 	>> end
@@ -182,7 +201,7 @@ The rows of studyFq index each study you've retrieved, and the cols index the fr
 
 	>> [IDX, C] = kmeans(studyFq, 2)
 	
-By the way, if you're annoyed by having to copy in the pmids from python/bash into matlab, a more elegant solution might be to save the pmids for each phrase you're interested in analyzing into a text file that you can reference later or load in automatically from matlab. This code would do that for you: 
+By the way, if you're annoyed by having to reference pmids for different terms, you could pre-generate them for reference later. To do this in matlab you can just make an array of strings to loop over in the code where we reference "semantic". In python, you might do the following and save out some text files for reading later:
 
 	> for keyterm in your_list: # make sure you put all the phrases you want to loop through into your_list. To extract all features from neurosynth, you can use: dataset.get_feature_names()
 	>     print(keyterm)

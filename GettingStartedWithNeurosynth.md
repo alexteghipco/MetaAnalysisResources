@@ -168,7 +168,7 @@ First, we would load in the study-level word frequencies, which are the "feature
 
 Then we would extract the group of studies for which we would like to identify subgroups based on their word frequencies: 
 
-	>> feat = cellfun(@(v)v(1),f); % this extracts the first row of each cell array, which is really just the column name in the features.txt file (studies 		are rows and each column is a NS term; values are frequencies at which a study uses a term)
+	>> feat = cellfun(@(v)v(1),f); % this extracts the first row of each cell array, which is really just the column name in the features.txt file (studies are rows and each column is a NS term; values are frequencies at which a study uses a term)
 	>> [C,ia,ib] = intersect(feat,'semantic'); % the string here should map onto the term you'd like to isolate
 	>> tmp = str2double(f{ia}); % extract study frequencies for selected term (and convert to double array)
 	>> id = find(tmp > 0.001); % the number here should match the minimum rate at which you want a study to use your selected phrase
